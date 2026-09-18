@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CarFilm UTM Link Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --cf-navy: #111532;
+    --cf-navy-dark: #0a0d1f;
+    --cf-red: #ED3D1F;
+    --cf-orange: #F5741C;
+    --cf-gold: #FFA700;
+    --cf-cream: #FAF5EE;
+    --cf-warm: #F1ECE2;
+    --cf-border: #ebe5d7;
+    --cf-gray: #7d7b77;
+    --cf-text: #111532;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cf-warm);
+    color: var(--cf-text);
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+  .banner {
+    background: var(--cf-navy);
+    color: var(--cf-cream);
+    padding: 28px 32px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 4px solid var(--cf-orange);
+  }
+  .brand {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.6px;
+    margin: 0 0 6px 0;
+  }
+  .brand .dot { color: var(--cf-red); }
+  .subtitle {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--cf-gold);
+    font-weight: 500;
+  }
+  .card {
+    background: var(--cf-cream);
+    padding: 32px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 12px rgba(17,21,50,0.08);
+  }
+  .form-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--cf-border);
+  }
+  .form-section:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .form-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cf-navy);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--cf-gray);
+    font-style: italic;
+    margin-top: 4px;
+  }
+  select, input[type="text"], input[type="url"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--cf-border);
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    color: var(--cf-text);
+    background: white;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--cf-orange);
+    box-shadow: 0 0 0 3px rgba(245,116,28,0.15);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .banner { padding: 20px 24px; }
+    .brand { font-size: 22px; }
+  }
+  .output-block {
+    background: var(--cf-navy);
+    color: var(--cf-cream);
+    padding: 20px 24px;
+    border-radius: 6px;
+    margin-top: 24px;
+    position: relative;
+  }
+  .output-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cf-gold);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .output-url {
+    font-family: 'SF Mono', 'Monaco', 'Consolas', 'Roboto Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--cf-cream);
+    word-break: break-all;
+    padding: 14px 16px;
+    background: rgba(250,245,238,0.08);
+    border-radius: 4px;
+    border: 1px solid rgba(250,245,238,0.15);
+    min-height: 60px;
+  }
+  .copy-btn {
+    background: var(--cf-red);
+    color: var(--cf-cream);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 14px;
+  }
+  .copy-btn:hover { background: var(--cf-orange); }
+  .copy-btn.copied { background: #4ade80; }
+  .validation-error {
+    color: var(--cf-red);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 6px;
+    display: none;
+  }
+  .validation-error.show { display: block; }
+  .required-fields-warning {
+    background: rgba(237,61,31,0.08);
+    border-left: 3px solid var(--cf-red);
+    padding: 10px 14px;
+    border-radius: 4px;
+    color: var(--cf-navy);
+    font-size: 13px;
+    margin-top: 16px;
+    display: none;
+  }
+  .required-fields-warning.show { display: block; }
+  .history {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--cf-border);
+  }
+  .history-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cf-navy);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .history-item {
+    background: var(--cf-warm);
+    padding: 12px 14px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .history-details {
+    flex-grow: 1;
+    min-width: 0;
+  }
+  .history-label {
+    font-size: 11px;
+    color: var(--cf-gray);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .history-url {
+    font-family: 'SF Mono', 'Monaco', 'Consolas', 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--cf-navy);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .history-copy {
+    background: var(--cf-navy);
+    color: var(--cf-cream);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: fit-content;
+  }
+  .history-copy:hover { background: var(--cf-red); }
+  .history-copy.copied { background: #4ade80; }
+  .clear-history {
+    background: none;
+    color: var(--cf-gray);
+    border: none;
+    padding: 6px 8px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .clear-history:hover { color: var(--cf-red); }
+  .footer {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 11px;
+    color: var(--cf-gray);
+    font-style: italic;
+  }
+  .dynamic-field { display: none; }
+  .dynamic-field.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="banner">
+    <div style="font-size: 10px; letter-spacing: 2px; color: rgba(250,245,238,0.55); text-transform: uppercase; font-weight: 500; margin-bottom: 10px;">utm.cmosystems.co / carfilm</div>
+    <div class="brand">UTM Link Generator<span class="dot">.</span></div>
+    <div class="subtitle">CarFilm · Attribution taxonomy v1.0</div>
+  </div>
+
+  <div class="card">
+    <div class="form-section">
+      <label class="form-label" for="channel">1 · What channel is the link for?</label>
+      <select id="channel">
+        <option value="">Pick one...</option>
+        <option value="meta_ads">Meta ads (paid, Facebook/Instagram Feed)</option>
+        <option value="linkedin_ads">LinkedIn ads (paid)</option>
+        <option value="hubspot_email">HubSpot email (The Reel newsletter or one-off)</option>
+        <option value="direct_email">Direct outbound email (personal, from Ryan/Doug/Sean)</option>
+        <option value="linkedin_organic">LinkedIn organic post</option>
+        <option value="facebook_organic">Facebook organic post</option>
+        <option value="carfilm_site">CarFilm site internal (blog, resource pages)</option>
+        <option value="partner">Partner referral (Freddie Agency, etc.)</option>
+        <option value="google_ads">Google Ads (paid search)</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label" for="destination">2 · Destination URL (where the click goes)</label>
+      <input type="url" id="destination" placeholder="https://getcarfilm.com/pricing" />
+      <div class="form-hint">Paste the raw URL. UTMs will be appended automatically.</div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">3 · Fill in the fields for this channel</label>
+
+      <div id="fields_meta_ads" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Phase</label>
+            <input type="text" data-key="phase" placeholder="phase1" value="phase1" />
+          </div>
+          <div>
+            <label class="form-hint">Funnel role</label>
+            <select data-key="funnel_role">
+              <option value="prospecting">prospecting</option>
+              <option value="retargeting">retargeting</option>
+              <option value="awareness">awareness</option>
+              <option value="conversion">conversion</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Creative theme (short slug)</label>
+            <input type="text" data-key="creative_theme" placeholder="mbno_video, voicemail, doug_video" />
+          </div>
+          <div>
+            <label class="form-hint">Ad name slug</label>
+            <input type="text" data-key="ad_name" placeholder="a1_mbno_video" />
+          </div>
+          <div>
+            <label class="form-hint">Version</label>
+            <input type="text" data-key="version" placeholder="v1" value="v1" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_linkedin_ads" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Phase</label>
+            <input type="text" data-key="phase" placeholder="phase1" value="phase1" />
+          </div>
+          <div>
+            <label class="form-hint">Layer</label>
+            <select data-key="layer">
+              <option value="l1">l1 (Named Accounts)</option>
+              <option value="l2">l2 (Predictive)</option>
+              <option value="l3">l3 (Retargeting)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Audience slug</label>
+            <input type="text" data-key="audience_slug" placeholder="named, predictive, retargeting" />
+          </div>
+          <div>
+            <label class="form-hint">Ad name slug</label>
+            <input type="text" data-key="ad_name" placeholder="peer_challenge" />
+          </div>
+          <div>
+            <label class="form-hint">Version</label>
+            <input type="text" data-key="version" placeholder="v2" value="v2" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_hubspot_email" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Issue number</label>
+            <input type="text" data-key="issue_number" placeholder="004" />
+          </div>
+          <div>
+            <label class="form-hint">Section</label>
+            <select data-key="section">
+              <option value="masthead">masthead</option>
+              <option value="welcome_intro">welcome_intro</option>
+              <option value="theme">theme</option>
+              <option value="feature_article">feature_article</option>
+              <option value="play">play</option>
+              <option value="from_the_floor">from_the_floor</option>
+              <option value="carfilmer">carfilmer</option>
+              <option value="voices">voices</option>
+              <option value="video">video</option>
+              <option value="signoff">signoff</option>
+              <option value="footer">footer</option>
+              <option value="stamp">stamp</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Link context</label>
+            <input type="text" data-key="link_context" placeholder="inline, image, cta_button, thumbnail" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_direct_email" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Sender</label>
+            <select data-key="sender">
+              <option value="ryan">ryan</option>
+              <option value="doug">doug</option>
+              <option value="sean">sean</option>
+              <option value="carfilm_team">carfilm_team</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Recipient context (short slug)</label>
+            <input type="text" data-key="recipient_context" placeholder="q4_prospect, mbno_intro" />
+          </div>
+          <div>
+            <label class="form-hint">Link purpose</label>
+            <input type="text" data-key="link_purpose" placeholder="pricing, demo, video, case_study" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_linkedin_organic" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Poster</label>
+            <select data-key="poster">
+              <option value="doug">doug</option>
+              <option value="ryan">ryan</option>
+              <option value="sean">sean</option>
+              <option value="carfilm">carfilm (company page)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Post theme (short slug)</label>
+            <input type="text" data-key="post_theme" placeholder="intro_video_post, mbno_case_study" />
+          </div>
+          <div>
+            <label class="form-hint">Link purpose</label>
+            <input type="text" data-key="link_purpose" placeholder="pricing, video, demo" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_facebook_organic" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Poster</label>
+            <select data-key="poster">
+              <option value="doug">doug</option>
+              <option value="carfilm">carfilm (company page)</option>
+              <option value="bowties_and_benzes">bowties_and_benzes</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-hint">Post theme (short slug)</label>
+            <input type="text" data-key="post_theme" placeholder="intro_video_post" />
+          </div>
+          <div>
+            <label class="form-hint">Link purpose</label>
+            <input type="text" data-key="link_purpose" placeholder="pricing, video, demo" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_carfilm_site" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Source page slug</label>
+            <input type="text" data-key="source_page_slug" placeholder="blog_intro_video_playbook" />
+          </div>
+          <div>
+            <label class="form-hint">Link purpose</label>
+            <input type="text" data-key="link_purpose" placeholder="pricing_cta, demo_button" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_partner" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Partner slug</label>
+            <input type="text" data-key="partner_slug" placeholder="freddie_agency, wild_gravity" />
+          </div>
+          <div>
+            <label class="form-hint">Link purpose</label>
+            <input type="text" data-key="link_purpose" placeholder="pricing, demo, case_study" />
+          </div>
+        </div>
+      </div>
+
+      <div id="fields_google_ads" class="dynamic-field">
+        <div class="grid-2">
+          <div>
+            <label class="form-hint">Phase</label>
+            <input type="text" data-key="phase" placeholder="phase2" />
+          </div>
+          <div>
+            <label class="form-hint">Campaign theme</label>
+            <input type="text" data-key="campaign_theme" placeholder="brand, product, non_brand" />
+          </div>
+          <div>
+            <label class="form-hint">Ad group slug</label>
+            <input type="text" data-key="ad_group" placeholder="carfilm_video_dealership" />
+          </div>
+          <div>
+            <label class="form-hint">Version</label>
+            <input type="text" data-key="version" placeholder="v1" value="v1" />
+          </div>
+          <div>
+            <label class="form-hint">utm_term (paid search keyword, optional)</label>
+            <input type="text" data-key="utm_term" placeholder="carfilm+dealership+video" />
+          </div>
+        </div>
+      </div>
+
+      <div class="required-fields-warning" id="warning">Fill in every required field for this channel before we can generate a link.</div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Generated URL</label>
+      <div class="output-block">
+        <div class="output-label">Paste this into your ad, post, or email</div>
+        <div class="output-url" id="output">Pick a channel, add your destination URL, fill in the fields above. The tagged URL appears here.</div>
+        <button class="copy-btn" id="copyBtn" disabled>Copy URL</button>
+      </div>
+    </div>
+
+    <div class="history" id="historySection" style="display: none;">
+      <div class="history-title">Recent (last 10, this browser only)</div>
+      <div id="historyList"></div>
+      <button class="clear-history" id="clearHistory">Clear history</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span style="font-weight: 700; color: var(--cf-navy); letter-spacing: 0.5px;">C · M · O</span> Systems · Built by Ryan Block · 2026-09-18 · CarFilm Taxonomy v1.0
+  </div>
+</div>
+
+<script>
+  // Channel → source/medium mapping + required field ordering
+  const CHANNELS = {
+    meta_ads: {
+      source: 'meta',
+      medium: 'cpc',
+      required: ['phase', 'funnel_role', 'creative_theme', 'ad_name', 'version'],
+      buildCampaign: (v) => `${v.phase}_${v.funnel_role}_${v.creative_theme}`,
+      buildContent: (v) => `${v.ad_name}_${v.version}`
+    },
+    linkedin_ads: {
+      source: 'linkedin',
+      medium: 'cpc',
+      required: ['phase', 'layer', 'audience_slug', 'ad_name', 'version'],
+      buildCampaign: (v) => `${v.phase}_${v.layer}_${v.audience_slug}`,
+      buildContent: (v) => `${v.ad_name}_${v.version}`
+    },
+    hubspot_email: {
+      source: 'hubspot',
+      medium: 'newsletter',
+      required: ['issue_number', 'section', 'link_context'],
+      buildCampaign: (v) => `the_reel_${v.issue_number}`,
+      buildContent: (v) => `${v.section}_${v.link_context}`
+    },
+    direct_email: {
+      source: 'direct_email',
+      medium: 'email',
+      required: ['sender', 'recipient_context', 'link_purpose'],
+      buildCampaign: (v) => `${v.sender}_${v.recipient_context}`,
+      buildContent: (v) => v.link_purpose
+    },
+    linkedin_organic: {
+      source: 'linkedin',
+      medium: 'organic_post',
+      required: ['poster', 'post_theme', 'link_purpose'],
+      buildCampaign: (v) => `${v.poster}_${v.post_theme}`,
+      buildContent: (v) => v.link_purpose
+    },
+    facebook_organic: {
+      source: 'meta',
+      medium: 'organic_post',
+      required: ['poster', 'post_theme', 'link_purpose'],
+      buildCampaign: (v) => `${v.poster}_${v.post_theme}`,
+      buildContent: (v) => v.link_purpose
+    },
+    carfilm_site: {
+      source: 'carfilm_site',
+      medium: 'referral',
+      required: ['source_page_slug', 'link_purpose'],
+      buildCampaign: (v) => v.source_page_slug,
+      buildContent: (v) => v.link_purpose
+    },
+    partner: {
+      source: 'partner',
+      medium: 'referral',
+      required: ['partner_slug', 'link_purpose'],
+      buildCampaign: (v) => v.partner_slug,
+      buildContent: (v) => v.link_purpose
+    },
+    google_ads: {
+      source: 'google',
+      medium: 'cpc',
+      required: ['phase', 'campaign_theme', 'ad_group', 'version'],
+      buildCampaign: (v) => `${v.phase}_${v.campaign_theme}`,
+      buildContent: (v) => `${v.ad_group}_${v.version}`
+    }
+  };
+
+  const channelSelect = document.getElementById('channel');
+  const destinationInput = document.getElementById('destination');
+  const outputDiv = document.getElementById('output');
+  const copyBtn = document.getElementById('copyBtn');
+  const warning = document.getElementById('warning');
+  const historySection = document.getElementById('historySection');
+  const historyList = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistory');
+
+  function snake(v) {
+    return String(v || '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+  }
+
+  function showFields() {
+    document.querySelectorAll('.dynamic-field').forEach(el => el.classList.remove('active'));
+    const c = channelSelect.value;
+    if (c) {
+      const target = document.getElementById(`fields_${c}`);
+      if (target) target.classList.add('active');
+    }
+    build();
+  }
+
+  function collectValues(c) {
+    const container = document.getElementById(`fields_${c}`);
+    if (!container) return {};
+    const values = {};
+    container.querySelectorAll('[data-key]').forEach(el => {
+      values[el.dataset.key] = el.value;
+    });
+    return values;
+  }
+
+  function build() {
+    const c = channelSelect.value;
+    const dest = destinationInput.value.trim();
+
+    if (!c || !dest) {
+      outputDiv.textContent = 'Pick a channel, add your destination URL, fill in the fields above. The tagged URL appears here.';
+      copyBtn.disabled = true;
+      warning.classList.remove('show');
+      return;
+    }
+
+    const cfg = CHANNELS[c];
+    const raw = collectValues(c);
+    const missing = cfg.required.filter(k => !raw[k] || !raw[k].trim());
+
+    if (missing.length > 0) {
+      outputDiv.textContent = 'Fill in the required fields to generate the URL.';
+      copyBtn.disabled = true;
+      warning.classList.add('show');
+      warning.textContent = `Still needed: ${missing.join(', ')}`;
+      return;
+    }
+
+    warning.classList.remove('show');
+
+    // Snake case everything
+    const clean = {};
+    Object.keys(raw).forEach(k => { clean[k] = snake(raw[k]); });
+
+    const params = new URLSearchParams();
+    params.set('utm_source', cfg.source);
+    params.set('utm_medium', cfg.medium);
+    params.set('utm_campaign', cfg.buildCampaign(clean));
+    params.set('utm_content', cfg.buildContent(clean));
+    if (c === 'google_ads' && raw.utm_term) params.set('utm_term', snake(raw.utm_term));
+
+    let base = dest;
+    const separator = base.includes('?') ? '&' : '?';
+    const final = base + separator + params.toString();
+
+    outputDiv.textContent = final;
+    copyBtn.disabled = false;
+  }
+
+  channelSelect.addEventListener('change', showFields);
+  destinationInput.addEventListener('input', build);
+  document.querySelectorAll('.dynamic-field').forEach(el => {
+    el.addEventListener('input', build);
+    el.addEventListener('change', build);
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const url = outputDiv.textContent;
+    if (!url || copyBtn.disabled) return;
+    try {
+      navigator.clipboard.writeText(url);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    copyBtn.textContent = 'Copied ✓';
+    copyBtn.classList.add('copied');
+    saveToHistory(channelSelect.value, url);
+    setTimeout(() => {
+      copyBtn.textContent = 'Copy URL';
+      copyBtn.classList.remove('copied');
+    }, 1600);
+  });
+
+  // History (localStorage, up to 10 items)
+  function loadHistory() {
+    try {
+      return JSON.parse(localStorage.getItem('cf_utm_history') || '[]');
+    } catch (e) { return []; }
+  }
+  function saveHistory(items) {
+    try {
+      localStorage.setItem('cf_utm_history', JSON.stringify(items.slice(0, 10)));
+    } catch (e) { /* ignore quota */ }
+  }
+  function saveToHistory(channel, url) {
+    const items = loadHistory();
+    const entry = { channel, url, ts: Date.now() };
+    const filtered = items.filter(i => i.url !== url);
+    filtered.unshift(entry);
+    saveHistory(filtered);
+    renderHistory();
+  }
+  function renderHistory() {
+    const items = loadHistory();
+    if (items.length === 0) {
+      historySection.style.display = 'none';
+      return;
+    }
+    historySection.style.display = 'block';
+    historyList.innerHTML = '';
+    items.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      const details = document.createElement('div');
+      details.className = 'history-details';
+      const label = document.createElement('div');
+      label.className = 'history-label';
+      const channelLabel = channelSelect.querySelector(`option[value="${item.channel}"]`)?.textContent || item.channel;
+      label.textContent = channelLabel;
+      const urlDiv = document.createElement('div');
+      urlDiv.className = 'history-url';
+      urlDiv.textContent = item.url;
+      details.appendChild(label);
+      details.appendChild(urlDiv);
+      const btn = document.createElement('button');
+      btn.className = 'history-copy';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        try { navigator.clipboard.writeText(item.url); } catch (e) {}
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1400);
+      });
+      row.appendChild(details);
+      row.appendChild(btn);
+      historyList.appendChild(row);
+    });
+  }
+  clearHistoryBtn.addEventListener('click', () => {
+    if (confirm('Clear the recent URLs list?')) {
+      localStorage.removeItem('cf_utm_history');
+      renderHistory();
+    }
+  });
+
+  renderHistory();
+</script>
+
+</body>
+</html>
